@@ -1,0 +1,15 @@
+ALTER TABLE "transaction_participants_user" DROP CONSTRAINT "FK_1403966580332ae7a2da2321f47";
+ALTER TABLE "transaction_participants_user" DROP CONSTRAINT "FK_c46d3ce7d6d478fdb301fb6dc66";
+ALTER TABLE "transaction" DROP CONSTRAINT "FK_e32e0d2862e47419a5bb7370787";
+ALTER TABLE "transaction" DROP CONSTRAINT "FK_8639071696032d9f59b2623bd25";
+DROP INDEX "transaction_participants_user"@"IDX_1403966580332ae7a2da2321f4" CASCADE;
+DROP INDEX "transaction_participants_user"@"IDX_c46d3ce7d6d478fdb301fb6dc6" CASCADE;
+DROP TABLE "transaction_participants_user";
+DROP INDEX "transaction"@"IDX_e32e0d2862e47419a5bb737078" CASCADE;
+DROP INDEX "transaction"@"IDX_8639071696032d9f59b2623bd2" CASCADE;
+DROP TABLE "transaction";
+DROP SEQUENCE "transaction_id_seq";
+DROP TABLE "trip";
+DROP SEQUENCE "trip_id_seq";
+DROP TABLE "user";
+DROP SEQUENCE "user_id_seq";

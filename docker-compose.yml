@@ -1,0 +1,26 @@
+version: '3.1'
+
+volumes:
+  cockroach-data:
+
+services:
+  db:
+    image: cockroachdb/cockroach:v23.1.13
+    volumes:
+      - cockroach-data:/cockroach/cockroach-data
+    ports:
+      - "127.0.0.1:26257:26257"
+      - "127.0.0.1:8080:8080"
+    command: start-single-node --insecure
+  development:
+    build:
+      context: pock-server
+    command: sh -c "cargo watch -w . -x run"
+    environment:
+      - DATABASE_URL=postgresql://root@db:26257/pock?sslmode=disable
+      - ROCKET_PORT=3000
+      - ROCKET_ADDRESS=0.0.0.0
+    volumes:
+      - ./pock-server:/usr/app/pock-server
+    ports:
+      - "127.0.0.1:3000:3000"

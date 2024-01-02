@@ -12,7 +12,7 @@ pub struct Trip {
     pub description: String
 }
 
-#[derive(Insertable, Serialize, Deserialize, Debug)]
+#[derive(Insertable, Serialize, Deserialize, Debug, AsChangeset)]
 #[diesel(table_name = crate::schema::trip)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[serde(crate = "rocket::serde")]

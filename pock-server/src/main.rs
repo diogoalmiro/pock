@@ -2,6 +2,7 @@
 
 mod controllers {
     pub mod trips;
+    pub mod users;
 }
 
 #[get("/")]
@@ -13,5 +14,6 @@ fn index() -> &'static str {
 fn rocket() -> _ {
     rocket::build()
         .mount("/", routes![index])
-        .mount("/trips", controllers::trips::get_controller())
+        .mount("/trips", controllers::trips::get_routes())
+        .mount("/users", controllers::users::get_routes())
 }

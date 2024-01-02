@@ -74,6 +74,6 @@ fn delete(param_id: i64) -> Value {
     json!(deleted_trip)
 }
 
-pub fn get_controller() -> Vec<Route> {
+pub fn get_routes() -> Vec<Route> {
     routes![read, list, create, update, delete]
 } 

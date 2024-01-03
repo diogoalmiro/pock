@@ -9,6 +9,8 @@ RUN apt update && apt install -y \
 RUN cargo install cargo-watch
 RUN cargo install diesel_cli --no-default-features --features postgres
 
+RUN rustup component add rustfmt clippy
+
 RUN mkdir src && echo "fn main() {}" > src/main.rs
 COPY Cargo.toml Cargo.lock ./
 RUN cargo build

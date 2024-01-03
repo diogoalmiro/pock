@@ -1,6 +1,8 @@
-#[macro_use] extern crate rocket;
+#[macro_use]
+extern crate rocket;
 
 mod controllers {
+    pub mod transactions;
     pub mod trips;
     pub mod users;
 }
@@ -16,4 +18,5 @@ fn rocket() -> _ {
         .mount("/", routes![index])
         .mount("/trips", controllers::trips::get_routes())
         .mount("/users", controllers::users::get_routes())
+        .mount("/transactions", controllers::transactions::get_routes())
 }

@@ -1,8 +1,8 @@
+use diesel::prelude::*;
 use pock_server::models::*;
 use pock_server::*;
-use diesel::prelude::*;
+use rocket::serde::json::{json, Json, Value};
 use rocket::Route;
-use rocket::serde::json::{json, Value, Json};
 
 #[get("/")]
 fn list() -> Value {
@@ -25,7 +25,7 @@ fn read(param_id: i64) -> Value {
         .select(Trip::as_select())
         .filter(id.eq(param_id))
         .first::<Trip>(connection)
-        .expect("Error loading post!"))
+        .expect("Error loading trips!"))
 }
 
 #[post("/", data = "<trip_data>")]
@@ -76,4 +76,4 @@ fn delete(param_id: i64) -> Value {
 
 pub fn get_routes() -> Vec<Route> {
     routes![read, list, create, update, delete]
-} 
+}

@@ -1,8 +1,8 @@
+use diesel::prelude::*;
 use pock_server::models::*;
 use pock_server::*;
-use diesel::prelude::*;
+use rocket::serde::json::{json, Json, Value};
 use rocket::Route;
-use rocket::serde::json::{json, Value, Json};
 
 #[get("/")]
 fn list() -> Value {
@@ -13,7 +13,7 @@ fn list() -> Value {
         .limit(5)
         .select(User::as_select())
         .load(connection)
-        .expect("Error loading posts!"))
+        .expect("Error loading users!"))
 }
 
 #[get("/<param_id>")]

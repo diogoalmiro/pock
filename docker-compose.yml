@@ -12,10 +12,12 @@ services:
       - "127.0.0.1:26257:26257"
       - "127.0.0.1:8080:8080"
     command: start-single-node --insecure
+    environment:
+      - COCKROACH_DATABASE=pock
   development:
     build:
       context: pock-server
-    command: sh -c "cargo watch -w . -x run"
+    command: sh -c "cargo watch -w . -x fmt -x clippy -x run"
     environment:
       - DATABASE_URL=postgresql://root@db:26257/pock?sslmode=disable
       - ROCKET_PORT=3000

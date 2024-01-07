@@ -1,4 +1,5 @@
 use rocket::serde::{Deserialize, Serialize};
+use diesel::prelude::*;
 
 #[derive(Serialize, Debug)]
 #[serde(crate = "rocket::serde")]
@@ -15,9 +16,6 @@ pub struct TripRequestDTO {
     pub name: String,
     pub description: Option<String>,
 }
-
-use diesel::prelude::*;
-
 
 #[derive(Queryable, Selectable, Serialize, Deserialize, Debug)]
 #[diesel(table_name = pock_server::schema::trip)]

@@ -4,7 +4,6 @@ use std::fs;
 use std::path::Path;
 
 pub fn main() {
-    println!("cargo:warning=Building pock-server");
     println!("cargo:rerun-if-changed=src/entities/");
     println!("cargo:rerun-if-changed=build.rs");
 
@@ -14,7 +13,19 @@ pub fn main() {
     let mut mount_contents = Vec::<String>::new();
     fs::read_dir("src/entities/")
         .unwrap()
-        .map(|entry| entry.unwrap().file_name().into_string().unwrap())
+        .filter_map(|entry| {
+            let file_name = entry.unwrap().file_name().into_string().unwrap();
+            Path::new(
+                format!(
+                    "{0}/src/entities/{1}/routes.rs",
+                    env!("CARGO_MANIFEST_DIR"),
+                    file_name
+                )
+                .as_str(),
+            )
+            .exists()
+            .then_some(file_name)
+        })
         .for_each(|entity| {
             let functions = public_funcs(&entity);
             mount_contents.push(format!(

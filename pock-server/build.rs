@@ -23,14 +23,17 @@ pub fn main() {
                 functions.join(", ")
             ));
             entities_itens.push(format!(
-                "pub mod {} {{ pub mod routes {{ include!(concat!(env!(\"CARGO_MANIFEST_DIR\"), \"/src/entities/{}/routes.rs\")); }} }}",
+                r#"pub mod {} {{ #[path = "{}/src/entities/{}/routes.rs"] pub mod routes; }}"#,
                 entity,
-                entity
+                env!("CARGO_MANIFEST_DIR"),
+                entity.to_string()
             ));
         });
 
     let generated = format!(
         r#"use rocket::{{Rocket, Build}};
+use std::env;
+
 mod entities {{
     {}
 }}

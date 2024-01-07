@@ -1,24 +1,6 @@
 use diesel::prelude::*;
+use rocket::serde::json::Value;
 use rocket::serde::{Deserialize, Serialize};
-
-#[derive(Queryable, Selectable, Serialize, Deserialize, Debug)]
-#[diesel(table_name = crate::schema::trip)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-#[serde(crate = "rocket::serde")]
-pub struct Trip {
-    pub id: i64,
-    pub name: String,
-    pub description: String,
-}
-
-#[derive(Insertable, Serialize, Deserialize, Debug, AsChangeset)]
-#[diesel(table_name = crate::schema::trip)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-#[serde(crate = "rocket::serde")]
-pub struct NewTrip {
-    pub name: String,
-    pub description: String,
-}
 
 #[derive(Queryable, Selectable, Serialize, Deserialize, Debug)]
 #[diesel(table_name = crate::schema::user)]
@@ -73,7 +55,7 @@ pub struct TransactionResponseDTO {
     pub name: String,
     pub description: String,
     pub value: f64,
-    pub trip: Trip,
+    pub trip: Value,
     pub payer: User,
     pub participants: Vec<User>,
 }

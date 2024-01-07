@@ -6,6 +6,7 @@ RUN apt update && apt install -y \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
+RUN cargo install evcxr_repl
 RUN cargo install cargo-watch
 RUN cargo install diesel_cli --no-default-features --features postgres
 

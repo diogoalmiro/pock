@@ -1,22 +1,10 @@
 #[macro_use]
 extern crate rocket;
 
-mod controllers {
-    pub mod transactions;
-    pub mod trips;
-    pub mod users;
-}
-
-#[get("/")]
-fn index() -> &'static str {
-    "Hello, world!"
-}
+include!(concat!(env!("OUT_DIR"), "/generated.rs"));
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build()
-        .mount("/", routes![index])
-        .mount("/trips", controllers::trips::get_routes())
-        .mount("/users", controllers::users::get_routes())
-        .mount("/transactions", controllers::transactions::get_routes())
+    let builder = rocket::build();
+    setup_routes(builder)
 }

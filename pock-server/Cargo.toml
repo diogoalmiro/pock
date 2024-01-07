@@ -8,4 +8,8 @@ edition = "2021"
 
 [dependencies]
 diesel = { version = "2.1.4", features = ["postgres"] }
+regex = "1.10.2"
 rocket = { version = "0.5.0", features = ["json"] }
+
+[build-dependencies]
+regex = "1.10.2"

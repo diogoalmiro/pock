@@ -2,10 +2,9 @@ use diesel::prelude::*;
 use pock_server::models::*;
 use pock_server::*;
 use rocket::serde::json::{json, Json, Value};
-use rocket::Route;
 
 #[get("/")]
-fn list() -> Value {
+pub fn list() -> Value {
     use self::schema::transaction::dsl::*;
 
     let connection = &mut establish_connection();
@@ -17,7 +16,7 @@ fn list() -> Value {
 }
 
 #[get("/<param_id>")]
-fn read(param_id: i64) -> Value {
+pub fn read(param_id: i64) -> Value {
     use self::schema::transaction::dsl as transaction_dsl;
     //use self::schema::transaction_participants_user::dsl as participants_dsl;
     //use self::schema::trip::dsl as trip_dsl;
@@ -41,7 +40,7 @@ fn read(param_id: i64) -> Value {
 }
 
 #[post("/", data = "<transaction_data>")]
-fn create(transaction_data: Json<TransactionRequestDTO>) -> Value {
+pub fn create(transaction_data: Json<TransactionRequestDTO>) -> Value {
     use self::schema::transaction::dsl::*;
     use self::schema::transaction_participants_user::dsl::*;
 
@@ -113,11 +112,7 @@ fn delete(param_id: i64) -> Value {
     json!(deleted_transaction)
 }
 
-pub fn get_routes() -> Vec<Route> {
+fn get_routes() -> Vec<Route> {
     routes![list, read, create, update, delete]
 }
 */
-
-pub fn get_routes() -> Vec<Route> {
-    routes![list, read, create]
-}

@@ -2,10 +2,9 @@ use diesel::prelude::*;
 use pock_server::models::*;
 use pock_server::*;
 use rocket::serde::json::{json, Json, Value};
-use rocket::Route;
 
 #[get("/")]
-fn list() -> Value {
+pub fn list() -> Value {
     use self::schema::user::dsl::*;
 
     let connection = &mut establish_connection();
@@ -17,7 +16,7 @@ fn list() -> Value {
 }
 
 #[get("/<param_id>")]
-fn read(param_id: i64) -> Value {
+pub fn read(param_id: i64) -> Value {
     use self::schema::user::dsl::*;
 
     let connection = &mut establish_connection();
@@ -29,7 +28,7 @@ fn read(param_id: i64) -> Value {
 }
 
 #[post("/", data = "<user_data>")]
-fn create(user_data: Json<NewUser>) -> Value {
+pub fn create(user_data: Json<NewUser>) -> Value {
     use self::schema::user::dsl::*;
 
     let connection = &mut establish_connection();
@@ -44,7 +43,7 @@ fn create(user_data: Json<NewUser>) -> Value {
 }
 
 #[put("/<param_id>", data = "<user_data>")]
-fn update(param_id: i64, user_data: Json<NewUser>) -> Value {
+pub fn update(param_id: i64, user_data: Json<NewUser>) -> Value {
     use self::schema::user::dsl::*;
 
     let connection = &mut establish_connection();
@@ -60,7 +59,7 @@ fn update(param_id: i64, user_data: Json<NewUser>) -> Value {
 }
 
 #[delete("/<param_id>")]
-fn delete(param_id: i64) -> Value {
+pub fn delete(param_id: i64) -> Value {
     use self::schema::user::dsl::*;
 
     let connection = &mut establish_connection();
@@ -72,8 +71,4 @@ fn delete(param_id: i64) -> Value {
         .expect("Error deleting user");
 
     json!(deleted_user)
-}
-
-pub fn get_routes() -> Vec<Route> {
-    routes![list, read, create, update, delete]
 }

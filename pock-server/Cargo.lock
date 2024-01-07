@@ -734,6 +734,7 @@ name = "pock-server"
 version = "0.1.0"
 dependencies = [
  "diesel",
+ "regex",
  "rocket",
 ]
 

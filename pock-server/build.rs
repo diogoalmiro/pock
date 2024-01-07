@@ -23,10 +23,11 @@ pub fn main() {
                 functions.join(", ")
             ));
             entities_itens.push(format!(
-                r#"pub mod {} {{ #[path = "{}/src/entities/{}/routes.rs"] pub mod routes; }}"#,
-                entity,
+                r#"#[path = "{0}/src/entities/{1}/routes.rs"]
+pub mod {1};
+"#,
                 env!("CARGO_MANIFEST_DIR"),
-                entity.to_string()
+                entity
             ));
         });
 
@@ -34,14 +35,13 @@ pub fn main() {
         r#"use rocket::{{Rocket, Build}};
 use std::env;
 
-mod entities {{
-    {}
-}}
+{}
+
 pub fn setup_routes(builder: Rocket<Build>) -> Rocket<Build> {{
     builder
         {}
 }}"#,
-        entities_itens.join("\n\t"),
+        entities_itens.join("\n"),
         mount_contents.join("\n\t\t")
     );
 
@@ -56,12 +56,6 @@ fn public_funcs(entity: &str) -> Vec<String> {
                 .unwrap_or(String::new())
                 .as_str(),
         )
-        .map(|m| {
-            format!(
-                "entities::{}::routes::{}",
-                entity,
-                m.get(1).unwrap().as_str()
-            )
-        })
+        .map(|m| format!("{}::{}", entity, m.get(1).unwrap().as_str()))
         .collect()
 }

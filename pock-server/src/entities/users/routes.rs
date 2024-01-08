@@ -1,5 +1,5 @@
 use diesel::prelude::*;
-mod models;
+pub mod models;
 use crate::users::models::*;
 
 use pock_server::establish_connection;

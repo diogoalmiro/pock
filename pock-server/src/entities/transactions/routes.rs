@@ -9,32 +9,39 @@ use crate::trips::models::*;
 
 
 use pock_server::establish_connection;
-#[allow(unused_imports)]
 use pock_server::schema::transaction::dsl::*;
-#[allow(unused_imports)]
-use pock_server::schema::user::dsl::*;
-use pock_server::schema::trip::dsl::*;
-#[allow(unused_imports)]
-use pock_server::schema::transaction_participants_user::dsl::*;
+use pock_server::schema::user::dsl::user;
+use pock_server::schema::trip::dsl::trip;
+
 #[allow(unused_imports)]
 use rocket::serde::json::{Json, Value, json};
 
 #[get("/")]
-pub fn list() -> Value {
+pub fn list() -> Json<Vec<TransactionResponseDTO>> {
     let connection = &mut establish_connection();
 
-    let read_transactions = transaction
+    let read_full_transactions = transaction
         .inner_join(trip)
         .inner_join(user)
         .load::<(ReadTransactionEntity, ReadTripEntity, ReadUserEntity)>(connection)
         .expect("Error loading transactions");
-
-    let transactions_dto: Vec<TransactionResponseDTO> = read_transactions
+    // extract transactions
+    let extract_transactions: Vec<ReadTransactionEntity> =  read_full_transactions
+        .iter()
+        .map(|(t, _, _)| t.clone())
+        .collect();
+    let participants_transactions = ReadTransactionParticipantEntity::belonging_to(&extract_transactions)
+        .inner_join(user)
+        .load::<(ReadTransactionParticipantEntity, ReadUserEntity)>(connection)
+        .expect("Error loading participants")
+        .grouped_by(&extract_transactions);
+    let transactions_dto: Vec<TransactionResponseDTO> = read_full_transactions
         .into_iter()
-        .map(|(ctra,ctrip,cpayer)| TransactionResponseDTO {
+        .zip(participants_transactions)
+        .map(|((ctra,ctrip,cpayer), pars)| TransactionResponseDTO {
             id: ctra.id,
             name: ctra.name.clone(),
-            value: ctra.value.clone(),
+            value: ctra.value,
             description: ctra.description.clone(),
             payer: UserResponseDTO {
                 id: cpayer.id,
@@ -45,21 +52,46 @@ pub fn list() -> Value {
                 name: ctrip.name,
                 description: ctrip.description
             },
-            participants: get_transaction_participants(&ctra).map(|(cpart, upart)| UserResponseDTO {
-                id: upart.id,
-                name: upart.name
+            participants: pars.into_iter().map(|(_, u)| UserResponseDTO {
+                id: u.id,
+                name: u.name
             }).collect()
-
         }).collect();
-    json!(transactions_dto)
+    Json(transactions_dto)
 }
 
-fn get_transaction_participants(rtrans: &ReadTransactionEntity) -> std::vec::IntoIter<(ReadTransactionParticipantEntity, ReadUserEntity)>{
+#[get("/<param_id>")]
+pub fn read(param_id: i64) -> Json<TransactionResponseDTO> {
     let connection = &mut establish_connection();
 
-    ReadTransactionParticipantEntity::belonging_to(rtrans)
+    let read_full_transaction = transaction
+        .inner_join(trip)
         .inner_join(user)
-        .load(connection)
-        .expect("Error loading participants")
-        .into_iter()
+        .filter(id.eq(param_id))
+        .first::<(ReadTransactionEntity, ReadTripEntity, ReadUserEntity)>(connection)
+        .expect("Error loading transaction");
+    let participants_transaction = ReadTransactionParticipantEntity::belonging_to(&read_full_transaction.0)
+        .inner_join(user)
+        .load::<(ReadTransactionParticipantEntity, ReadUserEntity)>(connection)
+        .expect("Error loading participants");
+    let transaction_dto = TransactionResponseDTO {
+        id: read_full_transaction.0.id,
+        name: read_full_transaction.0.name.clone(),
+        value: read_full_transaction.0.value,
+        description: read_full_transaction.0.description.clone(),
+        payer: UserResponseDTO {
+            id: read_full_transaction.2.id,
+            name: read_full_transaction.2.name
+        },
+        trip: TripResponseDTO {
+            id: read_full_transaction.1.id,
+            name: read_full_transaction.1.name,
+            description: read_full_transaction.1.description
+        },
+        participants: participants_transaction.into_iter().map(|(_, u)| UserResponseDTO {
+            id: u.id,
+            name: u.name
+        }).collect()
+    };
+    Json(transaction_dto)
 }

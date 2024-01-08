@@ -4,11 +4,8 @@ use diesel::prelude::*;
 use crate::trips::models::*;
 use crate::users::models::*;
 
-
-
 use pock_server::schema::trip::dsl::*;
 use pock_server::schema::user::dsl::*;
-use pock_server::schema::transaction::dsl::*;
 
 #[derive(Serialize, Debug)]
 #[serde(crate = "rocket::serde")]
@@ -36,7 +33,7 @@ pub struct TransactionRequestDTO {
     pub participants: Vec<i64>,
 }
 
-#[derive(Identifiable, Queryable, Selectable, Serialize, Deserialize, Associations, Debug)]
+#[derive(Identifiable, Queryable, Selectable, Serialize, Deserialize, Associations, Debug, Clone)]
 #[diesel(table_name = pock_server::schema::transaction)]
 #[diesel(belongs_to(trip, foreign_key = tripId))]
 #[diesel(belongs_to(user, foreign_key = payerId))]

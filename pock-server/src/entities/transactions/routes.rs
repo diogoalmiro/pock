@@ -252,3 +252,50 @@ pub fn update(param_id: Option<i64>, data_transaction: Json<TransactionRequestDT
     };
     Json(transaction_dto)
 }
+
+#[delete("/<param_id>")]
+pub fn delete(param_id: i64) -> Json<TransactionResponseDTO> {
+    let connection = &mut establish_connection();
+    
+    let deleted_transaction = transaction
+        .filter(id.eq(param_id))
+        .first::<ReadTransactionEntity>(connection)
+        .expect("Error loading transaction");
+    let deleted_participants_transaction = ReadTransactionParticipantEntity::belonging_to(&deleted_transaction)
+        .inner_join(user)
+        .load::<(ReadTransactionParticipantEntity, ReadUserEntity)>(connection)
+        .expect("Error loading participants");
+
+    let deleted_transaction = diesel::delete(transaction.filter(id.eq(param_id)))
+        .get_result::<ReadTransactionEntity>(connection)
+        .expect("Error deleting transaction");
+    let deleted_trip = trip
+        .filter(trip_id.eq(deleted_transaction.trip_id))
+        .first::<ReadTripEntity>(connection)
+        .expect("Error loading trip");
+    let deleted_payer = user
+        .filter(user_id.eq(deleted_transaction.payer_id))
+        .first::<ReadUserEntity>(connection)
+        .expect("Error loading payer");
+
+    let transaction_dto = TransactionResponseDTO {
+        id: deleted_transaction.id,
+        name: deleted_transaction.name.clone(),
+        value: deleted_transaction.value,
+        description: deleted_transaction.description.clone(),
+        payer: UserResponseDTO {
+            id: deleted_payer.id,
+            name: deleted_payer.name
+        },
+        trip: TripResponseDTO {
+            id: deleted_trip.id,
+            name: deleted_trip.name,
+            description: deleted_trip.description
+        },
+        participants: deleted_participants_transaction.into_iter().map(|(_, u)| UserResponseDTO {
+            id: u.id,
+            name: u.name
+        }).collect()
+    };
+    Json(transaction_dto)
+}

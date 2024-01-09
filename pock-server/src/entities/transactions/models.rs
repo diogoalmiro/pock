@@ -30,7 +30,8 @@ pub struct TransactionRequestDTO {
     pub trip_id: Option<i64>,
     #[serde(rename = "payerId")]
     pub payer_id: Option<i64>,
-    pub participants: Vec<i64>,
+    #[serde(rename = "participantsId")]
+    pub participants_id: Vec<i64>,
 }
 
 #[derive(Identifiable, Queryable, Selectable, Serialize, Deserialize, Associations, Debug, Clone)]

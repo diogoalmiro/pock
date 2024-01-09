@@ -1,4 +1,4 @@
-#[allow(unused_imports)]
+use diesel::result::Error;
 use diesel::prelude::*;
 mod models;
 #[allow(unused_imports)]
@@ -10,8 +10,9 @@ use crate::trips::models::*;
 
 use pock_server::establish_connection;
 use pock_server::schema::transaction::dsl::*;
-use pock_server::schema::user::dsl::user;
-use pock_server::schema::trip::dsl::trip;
+use pock_server::schema::user::dsl::{user, id as user_id};
+use pock_server::schema::trip::dsl::{trip, id as trip_id};
+use pock_server::schema::transaction_participants_user::dsl::transaction_participants_user;
 
 #[allow(unused_imports)]
 use rocket::serde::json::{Json, Value, json};
@@ -89,6 +90,76 @@ pub fn read(param_id: i64) -> Json<TransactionResponseDTO> {
             description: read_full_transaction.1.description
         },
         participants: participants_transaction.into_iter().map(|(_, u)| UserResponseDTO {
+            id: u.id,
+            name: u.name
+        }).collect()
+    };
+    Json(transaction_dto)
+}
+
+#[post("/", data = "<data_transaction>")]
+pub fn create(data_transaction: Json<TransactionRequestDTO>) -> Json<TransactionResponseDTO> {
+    let connection = &mut establish_connection();
+
+    let data_name = data_transaction.name.clone();
+    let data_description = data_transaction.description.clone().or(data_name.clone());
+    let data_value = data_transaction.value.expect("Value is required");
+    let data_payer_id = data_transaction.payer_id.expect("Payer is required");
+    let data_trip_id = data_transaction.trip_id.expect("Trip is required");
+    let data_participants_id = data_transaction.participants_id.clone();
+
+    let inserted_transaction: std::result::Result<ReadTransactionEntity, Error> = connection.transaction(|connection| {
+        let new_transaction = UpdateTransactionEntity {
+            id: None,
+            name: data_name,
+            description: data_description,
+            value: Some(data_value),
+            trip_id: Some(data_trip_id),
+            payer_id: Some(data_payer_id),
+        };
+        let inserted_transaction = diesel::insert_into(transaction)
+            .values(&new_transaction)
+            .get_result::<ReadTransactionEntity>(connection)
+            .expect("Error saving new transaction");
+        let participants = data_participants_id.clone().into_iter().map(|pid| UpdateTransactionParticipantEntity {
+            transaction_id: Some(inserted_transaction.id),
+            user_id: Some(pid)
+        }).collect::<Vec<UpdateTransactionParticipantEntity>>();
+        diesel::insert_into(transaction_participants_user)
+            .values(&participants)
+            .execute(connection)
+            .expect("Error saving new transaction participants");
+        Ok(inserted_transaction)
+    });
+    let inserted_transaction = inserted_transaction.expect("Error saving new transaction");
+    let inserted_participants_transaction = ReadTransactionParticipantEntity::belonging_to(&inserted_transaction)
+        .inner_join(user)
+        .load::<(ReadTransactionParticipantEntity, ReadUserEntity)>(connection)
+        .expect("Error loading participants");
+    let inserted_trip = trip
+        .filter(trip_id.eq(data_trip_id))
+        .first::<ReadTripEntity>(connection)
+        .expect("Error loading trip");
+    let inserted_payer = user
+        .filter(user_id.eq(data_payer_id))
+        .first::<ReadUserEntity>(connection)
+        .expect("Error loading payer");
+
+    let transaction_dto = TransactionResponseDTO {
+        id: inserted_transaction.id,
+        name: inserted_transaction.name.clone(),
+        value: inserted_transaction.value,
+        description: inserted_transaction.description.clone(),
+        payer: UserResponseDTO {
+            id: inserted_payer.id,
+            name: inserted_payer.name
+        },
+        trip: TripResponseDTO {
+            id: inserted_trip.id,
+            name: inserted_trip.name,
+            description: inserted_trip.description
+        },
+        participants: inserted_participants_transaction.into_iter().map(|(_, u)| UserResponseDTO {
             id: u.id,
             name: u.name
         }).collect()

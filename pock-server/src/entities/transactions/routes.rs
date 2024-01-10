@@ -1,6 +1,6 @@
 use diesel::result::Error;
 use diesel::prelude::*;
-mod models;
+pub mod models;
 #[allow(unused_imports)]
 use crate::transactions::models::*;
 #[allow(unused_imports)]

@@ -48,8 +48,10 @@ pub fn get_reports(param_id: i64) -> Json<ReportResponseDTO> {
         let payer = unique_users.iter().find(|u| u.id == ct.payer_id).unwrap();
         let users_values: Vec<ReportTransactionParticipantResponseDTO> = unique_users.iter().map(|u| {
             let value;
-            if u.id == ct.payer_id {
+            if u.id == ct.payer_id && participants.is_some() && participants.unwrap().iter().any(|p| p.user_id == u.id) {
                 value = -ct.value + ct.value / size as f64;
+            } else if u.id == ct.payer_id {
+                value = -ct.value;
             } else if participants.is_some() && participants.unwrap().iter().any(|p| p.user_id == u.id) {
                 value = ct.value / size as f64;
             }

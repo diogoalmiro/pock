@@ -2,3 +2,5 @@
 *.swp
 .keep
 target/
+build/
+elm-stuff/

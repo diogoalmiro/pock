@@ -17,7 +17,7 @@ pub struct TripRequestDTO {
     pub description: Option<String>,
 }
 
-#[derive(Queryable, Selectable, Serialize, Deserialize, Debug)]
+#[derive(Identifiable, Queryable, Selectable, Serialize, Deserialize, Debug)]
 #[diesel(table_name = pock_server::schema::trip)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[serde(crate = "rocket::serde")]
